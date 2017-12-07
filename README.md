@@ -28,7 +28,7 @@ You're reading it!
 
 Using the urdf file, we can plot the position of each joint.
 
-TODO graph here.
+![alt text](images/DH_graph.png)
 
 We can then use the coordinates of the joints to derive DH parameters.
 
@@ -44,13 +44,13 @@ Links | alpha(i-1) | a(i-1) | d(i-1) | theta(i)
 
 We verify our values are correct by running the forward_kinematics demo.
 
-TODO picture here
+![alt text](images/test_forward.png)
 
 #### 2. Using the DH parameter table you derived earlier, create individual transformation matrices about each joint. In addition, also generate a generalized homogeneous transform between base_link and gripper_link using only end-effector(gripper) pose.
 
 The individual transformation matrices are easily derived from the DH parameters by replacing them in the general DH transformation matrix:
 
-TODO insert matrix
+![alt text](images/RH_parameters.png)
 
 We obtain the full transformation from fixed base to gripper by multplying all the individual matrices together: T0_EE = T0_1 * T1_2 * T2_3 * T3_4 * T4_5 * T5_6 * T6_EE.
 
@@ -67,7 +67,7 @@ We use the following steps:
 - calculate transformation matrix from wrist center to end effector by using the inverse of transformation from the base frame to the wrist
 - use trigonometry to find the last 3 joint angles
 
-TODO include illustration
+![alt text](images/IK_figure.png)
 
 ### Project Implementation
 
