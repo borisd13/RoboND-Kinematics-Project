@@ -108,36 +108,53 @@ def handle_calculate_IK(req):
                           [           0, 0,          0, 1]])
             
             R_corr = R_z * R_y
-
             Rot_G_corr = Rot_G * R_corr[:3,:3]
             Rot_G_corr = Rot_G_corr.subs({r:roll, p:pitch, y:yaw})
             
             # Calculate joint angles using Geometric IK method
+
+            # Calculate position of wrist center as:
+            # "position of end effector" - "distance between wrist and end effoctor" * "local z-axis"
             G = Matrix([[px],
                        [py],
                        [pz]])
             WC = G - 0.303 * Rot_G_corr[:,2]
             
+            # theta1 can be obtained with a top projection
             theta1 = atan2(WC[1], WC[0])
-            a = 1.501
+
+            # we calculate theta2 and theta3 by projecting to local plane, refer to figure in write_up
+            # distance between joint 3 and wrist center
+            a = sqrt(pow(1.5, 2) + pow(0.054, 2))
+            # distance between joint 2 and wrist center
             b = sqrt(pow((sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35), 2) + pow((WC[2] - 0.75), 2))
+            # distance between joint 2 and joint 3
             c = 1.25
 
+            # use cosine law to find angle values
             ang_a = acos((b * b + c * c - a * a) / (2 * b * c))
             ang_b = acos((a * a + c * c - b * b) / (2 * a * c))
             ang_c = acos((a * a + b * b - c * c) / (2 * a * b))
 
+            # theta2 can be calculated from sum of angles at joint 2
             theta2 = pi / 2 - ang_a - atan2(WC[2] - 0.75, sqrt(WC[0] * WC[0] + WC[1] * WC[1]) - 0.35)
-            theta3 = pi / 2 - (ang_b + 0.036)
 
+            # theta3 can be calculated from sum of angles at joint 3
+            theta3_init = pi/2 + atan2(0.054, 1.5) # initial angle at joint 3 (see figure in write_up)
+            theta3 = pi - ang_b - theta3_init
+
+            # calculate transformation from base frame to frame at joint 3
             R0_3 = T0_1[0:3,0:3] * T1_2[0:3,0:3] * T2_3[0:3,0:3]
             R0_3 = R0_3.evalf(subs={q1: theta1, q2: theta2, q3: theta3})
 
-            R3_6 = R0_3.inv("LU") * Rot_G_corr
+            # calculate transformation between joint 3 and end effector
+            R3_G = R0_3.transpose() * Rot_G_corr
 
-            theta4 = atan2(R3_6[2,2], -R3_6[0,2])
-            theta5 = atan2(sqrt(R3_6[0,2]*R3_6[0,2] + R3_6[2,2]*R3_6[2,2]), R3_6[1,2])
-            theta6 = atan2(-R3_6[1,1], R3_6[1,0])
+            # the easiest is to calculate the symbolic form of R3_G from joint angles with sympy
+            # then we can easily find formulas to calculate the missing theta values (refer to writeup)
+            theta4 = atan2(R3_G[2,2], -R3_G[0,2])
+            theta5 = atan2(sqrt(R3_G[0,2]*R3_G[0,2] + R3_G[2,2]*R3_G[2,2]), R3_G[1,2])
+            theta6 = atan2(-R3_G[1,1], R3_G[1,0])
 		
             # Populate response for the IK request
             # In the next line replace theta1,theta2...,theta6 by your joint angle variables
