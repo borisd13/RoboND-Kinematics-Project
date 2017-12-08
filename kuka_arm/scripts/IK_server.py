@@ -97,15 +97,8 @@ def handle_calculate_IK(req):
      
             ### Your IK code here 
             # Compensate for rotation discrepancy between DH parameters and Gazebo
-            R_z = Matrix([[ cos(pi), -sin(pi), 0, 0],
-                          [ sin(pi),  cos(pi), 0, 0],
-                          [       0,        0, 1, 0],
-                          [       0,        0, 0, 1]])
-
-            R_y = Matrix([[  cos(-pi/2), 0, sin(-pi/2), 0],
-                          [           0, 1,          0, 0],
-                          [ -sin(-pi/2), 0, cos(-pi/2), 0],
-                          [           0, 0,          0, 1]])
+            R_z = Rot_z.subs({y: pi})
+            R_y = Rot_y.subs({p: -pi/2})
             
             R_corr = R_z * R_y
             Rot_G_corr = Rot_G * R_corr[:3,:3]
