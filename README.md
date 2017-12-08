@@ -61,18 +61,32 @@ We use trigonometry to find the angles on all different joints. We split the pro
 - Position from the wrist center to the end effector
 
 We use the following steps:
-- find rotation matrix for end effector through its orientation
-- find position of wrist center through previous rotation matrix and position of end effector
-- use trigonometry to find the 3 first joint angles, leading to wrist center
-- calculate transformation matrix from wrist center to end effector by using the inverse of transformation from the base frame to the wrist
-- use trigonometry to find the last 3 joint angles
-
-![alt text](images/IK_figure.png)
+- Find rotation matrix for end effector through its orientation (roll, pitch, yaw). It is just a multiplication of 3 rotations around different axes.
+- Find position of wrist center through previous rotation matrix and position of end effector. We take the position of the end effector and use its local z-axis to calculate the position of the wrist center.
+- use trigonometry to find the 3 first joint angles, leading to wrist center (see below sketch).
+  - theta 1 can be obtained with a top projection
+  - we calculate sides A, B, C through simple projections and use cosine law to calculate triangle angles
+  - theta 2 is calculated from sum of angles at joint 2
+  - theta 3 is calculated from sum of angles at joint 3, without forgetting the small initial angle when all joint angles are 0.
+![alt text](images/angle_sketch.jpg)
+- calculate transformation matrix from wrist center to end effector by using the inverse of transformation from the base frame to the wrist.
+- we use sympy to have the analytical form of the previously calculated matrix (only the values we used are represented in this matrix)
+![alt text](images/T3_G.png)
+- we find ways to calculate theta 4, 5 and 6 from the analytical form (several possible alternatives exist):
+  - theta 4 = atan2(-T3_G[3,3], T3_G[1,3])
+  - theta 5 = atan2(sqrt(T3_G[1,3]^2 + T3_G[3,3]^2), T3_G[2,3)
+  - theta 6 = atan2(-T3_2[2,2], T3_2[2,1])
 
 ### Project Implementation
 
 #### 1. Fill in the `IK_server.py` file with properly commented python code for calculating Inverse Kinematics based on previously performed Kinematic Analysis. Your code must guide the robot to successfully complete 8/10 pick and place cycles. Briefly discuss the code you implemented and your results. 
 
-The code has been commented to explain the sequence of steps used. We follow the same logic described previously. Using the sympy library helps visualize the equations and see possible ways to find the angles of the joints. It also let us confirm which variable should be constant, helping a lot in debugging.
+The code has been commented to explain the sequence of steps used. We follow the same logic described previously.
 
-The code succeeds in picking correctly the objects, though the trajectory can sometimes seem complex and long.
+The following has been observed during the development of this project:
+* Using the sympy library helps visualize the equations and see possible ways to find the angles of the joints. It also let us confirm which variable should be constant and the positive direction of angles, helping a lot in debugging.
+* The difference of convention between urdf and DH parameters can make it difficult to find the correct values. In particular the correction matrix to rotate from local DH frame to URDF at end effector was not obvious. Displaying local frames can help.
+* Doing a lot of sketches is key both for forward kinematics and even more for inverse kinematics! Performing tests and checking our values are correct joint after joint help in debugging any issue.
+
+The code succeeds in picking correctly the objects and dropping them in the cylinder.
+![alt text](images/drop_object.png)
