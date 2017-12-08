@@ -73,7 +73,7 @@ We use the following steps:
 - we use sympy to have the analytical form of the previously calculated matrix (only the values we used are represented in this matrix)
 ![alt text](images/T3_G.png)
 - we find ways to calculate theta 4, 5 and 6 from the analytical form (several possible alternatives exist):
-  - theta 4 = atan2(-T3_G[3,3], T3_G[1,3])
+  - theta 4 = atan2(-T3_G[3,3], T3_G[1,3]) = atan(sin(q4) / cos(q4)) = atan(tan(q4))
   - theta 5 = atan2(sqrt(T3_G[1,3]^2 + T3_G[3,3]^2), T3_G[2,3)
   - theta 6 = atan2(-T3_2[2,2], T3_2[2,1])
 
